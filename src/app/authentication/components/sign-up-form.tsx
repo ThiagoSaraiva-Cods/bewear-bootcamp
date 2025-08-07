@@ -40,7 +40,7 @@ const formSchema = z
     {
       error: "As senhas não coincidem.",
       path: ["passwordConfirmation"],
-    }
+    },
   );
 
 type FormValues = z.infer<typeof formSchema>;
