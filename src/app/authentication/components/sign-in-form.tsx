@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 
 const formSchema = z.object({
   email: z.email("E-mail inválido."),
@@ -39,8 +40,8 @@ const SignInForm = () => {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Formulário válido e enviado");
+  async function onSubmit(values: FormValues) {
+    console.log("a");
   }
 
   return (
