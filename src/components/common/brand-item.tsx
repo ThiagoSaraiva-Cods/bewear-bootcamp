@@ -16,7 +16,7 @@ export const BrandItem = ({ brand }: { brand: Brand }) => {
           width={12}
           height={12}
           sizes="100vw"
-          className="h-4 w-auto"
+          className="h-auto w-12"
         />
       </div>
       <p className="text-md font-medium">{brand.name}</p>
