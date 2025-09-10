@@ -109,7 +109,7 @@ export const productVariantTable = pgTable("product_variant", {
   name: text().notNull(),
   slug: text().notNull().unique(),
   color: text().notNull(),
-  priceInCents: integer("prince_in_cents").notNull(),
+  priceInCents: integer("price_in_cents").notNull(),
   imageUrl: text("image_url").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
