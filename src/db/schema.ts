@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const userTable = pgTable("user", {
-  id: text("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified")
@@ -24,24 +24,28 @@ export const userTable = pgTable("user", {
     .notNull(),
 });
 
+export const userRelations = relations(userTable, ({ many }) => ({
+  shippingAddresses: many(shippingAddressTable),
+}));
+
 export const sessionTable = pgTable("session", {
-  id: text("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
 });
 
 export const accountTable = pgTable("account", {
-  id: text("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
@@ -51,25 +55,21 @@ export const accountTable = pgTable("account", {
   refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
   scope: text("scope"),
   password: text("password"),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const verificationTable = pgTable("verification", {
-  id: text("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
-  ),
-  updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
-  ),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const categoryTable = pgTable("category", {
-  id: uuid().primaryKey().defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
   name: text().notNull(),
   slug: text().notNull().unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -82,7 +82,7 @@ export const categoryRelations = relations(categoryTable, ({ many }) => {
 
 // Um produto só pode possuir uma categoria
 export const productTable = pgTable("product", {
-  id: uuid().primaryKey().defaultRandom(),
+  id: uuid().defaultRandom().primaryKey(),
   categoryId: uuid("category_id")
     .notNull()
     .references(() => categoryTable.id, { onDelete: "set null" }),
@@ -102,7 +102,7 @@ export const productRelations = relations(productTable, ({ one, many }) => ({
 }));
 
 export const productVariantTable = pgTable("product_variant", {
-  id: uuid().primaryKey().defaultRandom(),
+  id: uuid().defaultRandom().primaryKey(),
   productId: uuid("product_id")
     .notNull()
     .references(() => productTable.id, { onDelete: "restrict" }),
@@ -121,5 +121,35 @@ export const productVariantRelations = relations(
       fields: [productVariantTable.productId],
       references: [productTable.id],
     }),
-  })
+  }),
+);
+
+export const shippingAddressTable = pgTable("shipping_address", {
+  id: uuid().defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  recipientName: text("recipient_name").notNull(),
+  city: text().notNull(),
+  state: text().notNull(),
+  street: text().notNull(),
+  number: text().notNull(),
+  complement: text(),
+  zipCode: text("zip_code").notNull(),
+  country: text().notNull(),
+  cpfOrCnpj: text("cpf_or_cnpj").notNull(),
+  neighborhood: text().notNull(),
+  email: text().notNull(),
+  phone: text().notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const shippingAddressRelations = relations(
+  shippingAddressTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [shippingAddressTable.userId],
+      references: [userTable.id],
+    }),
+  }),
 );

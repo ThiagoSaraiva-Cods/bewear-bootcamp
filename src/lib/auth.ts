@@ -7,6 +7,7 @@ import * as schema from "@/db/schema";
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
   },
   socialProviders: {
     google: {
@@ -16,18 +17,14 @@ export const auth = betterAuth({
   },
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema,
+    schema: {
+      user: schema.userTable,
+      session: schema.sessionTable,
+      account: schema.accountTable,
+      verification: schema.verificationTable,
+    },
   }),
-  user: {
-    modelName: "userTable",
-  },
-  session: {
-    modelName: "sessionTable",
-  },
-  account: {
-    modelName: "accountTable",
-  },
-  verification: {
-    modelName: "verificationTable",
+  advanced: {
+    generateId: () => crypto.randomUUID(), // Garantir geração de UUID
   },
 });
