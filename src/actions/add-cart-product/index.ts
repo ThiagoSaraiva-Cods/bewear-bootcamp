@@ -1,3 +1,4 @@
+"use server";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -33,6 +34,7 @@ export const addProductToCart = async (data: AddProductToCartSchema) => {
 
   // Se não existir carrinho, criar um novo
   let cartId = cart?.id;
+
   if (!cartId) {
     const [newCart] = await db
       .insert(cartTable)
@@ -59,6 +61,7 @@ export const addProductToCart = async (data: AddProductToCartSchema) => {
         quantity: cartItem.quantity + data.quantity,
       })
       .where(eq(cartItemTable.id, cartItem.id));
+    return;
   }
 
   // Se não estiver, adicionar produto ao carrinho
