@@ -3,6 +3,7 @@ import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
+import { addProductToCart } from "@/actions/add-cart-product";
 import { decreaseProductQuantityInCart } from "@/actions/decrease-cart-product-quantity";
 import { removeProductFromCart } from "@/actions/remove-cart-product";
 import { formatCentsToBRL } from "@/helpers/money";
@@ -12,6 +13,7 @@ import { Button } from "../ui/button";
 export type CartItemProps = {
   id: string;
   productVariantImageUrl: string;
+  productVariantId: string;
   productVariantName: string;
   productName: string;
   quantity: number;
@@ -21,6 +23,7 @@ export type CartItemProps = {
 export const CartItem = ({
   id,
   productName,
+  productVariantId,
   productVariantName,
   productVariantImageUrl,
   productVariantPriceInCents,
@@ -76,6 +79,31 @@ export const CartItem = ({
     });
   };
 
+  const increaseProductQuantityInCartMutation = useMutation({
+    mutationKey: ["increase-cart-product-quantity"],
+    mutationFn: () =>
+      addProductToCart({
+        productVariantId,
+        quantity: 1,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["cart"],
+      });
+    },
+  });
+
+  const handleIncreaseQuantityClick = () => {
+    increaseProductQuantityInCartMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Quantidade do produto aumentada.");
+      },
+      onError: () => {
+        toast.error("Erro ao aumentar quantidade do produto.");
+      },
+    });
+  };
+
   return (
     <div className="flex flex-wrap items-center justify-between">
       <div className="flex items-center gap-4">
@@ -105,7 +133,7 @@ export const CartItem = ({
               className="h-4 w-4"
               size="icon"
               variant="ghost"
-              onClick={() => {}}
+              onClick={handleIncreaseQuantityClick}
             >
               <PlusIcon />
             </Button>

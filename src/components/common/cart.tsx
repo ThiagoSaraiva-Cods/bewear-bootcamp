@@ -53,6 +53,7 @@ export const Cart = () => {
                   <CartItem
                     key={item.id}
                     id={item.id}
+                    productVariantId={item.productVariant.id}
                     productName={item.productVariant.product.name}
                     productVariantImageUrl={item.productVariant.imageUrl}
                     productVariantName={item.productVariant.name}
