@@ -1,6 +1,7 @@
 "use client";
 
 import { ShoppingBasket, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
 import {
   Sheet,
@@ -86,7 +87,9 @@ export const Cart = () => {
                 <p>{formatCentsToBRL(cart?.totalPriceInCents ?? 0)}</p>
               </div>
 
-              <Button className="mt-5 rounded-full">Finalizar Compra</Button>
+              <Button className="mt-5 rounded-full">
+                <Link href="/cart/identification">Finalizar Compra</Link>
+              </Button>
             </div>
           )}
         </div>
