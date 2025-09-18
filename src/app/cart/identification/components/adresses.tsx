@@ -31,7 +31,11 @@ export const Addresses = () => {
             </Card>
           </RadioGroup>
 
-          {selectedAddress === "add_new" && <AddressForm />}
+          {selectedAddress === "add_new" && (
+            <div className="mt-6">
+              <AddressForm />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

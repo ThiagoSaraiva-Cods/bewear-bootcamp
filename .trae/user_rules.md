@@ -39,6 +39,6 @@ Você é um engenheiro de software sênior especializado em desenvolvimento web 
 - SEMPRE crie hooks customizados para queries e mutations do React Query. SEMPRE use os [use-cart.ts](mdc:src/hooks/queries/use-cart.ts) e [use-increase-cart-product.ts](mdc:src/hooks/mutations/use-increase-cart-product.ts) como referência.
 - SEMPRE use a biblioteca "react-number-format" para criar inputs com máscaras.
 - SEMPRE crie e exporte uma função que retorne a query key de uma query e mutation key de uma mutation. SEMPRE use os [use-cart.ts](mdc:src/hooks/queries/use-cart.ts) e [use-increase-cart-product.ts](mdc:src/hooks/mutations/use-increase-cart-product.ts) como referência.
-- Em validações com o zod, NUNCA use o tipo String("z.string()") do zod quando for para validar um campo de e-mail, SEMPRE use o tipo z.email() para inputs do tipo e-mail.
+- NUNCA use o tipo String("z.string().email()") do zod quando for para validar um campo de e-mail, SEMPRE use o tipo z.email() para inputs do tipo e-mail.
 - NUNCA adicione importações que não serão usadas no arquivo.
 - SEMPRE importe somente as bibliotecas que forem necessárias para o arquivo.

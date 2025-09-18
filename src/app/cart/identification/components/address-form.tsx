@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -17,80 +16,206 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useCreateShippingAddress } from "@/hooks/mutations/use-create-shipping-address";
 
 const formSchema = z.object({
   email: z.email("E-mail inválido"),
-  nomeCompleto: z.string().min(1, "Nome completo é obrigatório"),
-  cpf: z
+  fullName: z.string().trim().min(1, "Nome completo é obrigatório"),
+  cpfOrCnpj: z
     .string()
     .min(14, "CPF é obrigatório")
     .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF inválido"),
-  celular: z
+  phone: z
     .string()
     .min(15, "Celular é obrigatório")
     .regex(/^\(\d{2}\) \d{5}-\d{4}$/, "Celular inválido"),
-  cep: z
+  zipCode: z
     .string()
     .min(9, "CEP é obrigatório")
     .regex(/^\d{5}-\d{3}$/, "CEP inválido"),
-  endereco: z.string().min(1, "Endereço é obrigatório"),
-  numero: z.string().min(1, "Número é obrigatório"),
-  complemento: z.string().optional(),
-  bairro: z.string().min(1, "Bairro é obrigatório"),
-  cidade: z.string().min(1, "Cidade é obrigatória"),
-  estado: z.string().min(1, "Estado é obrigatório"),
+  address: z.string().trim().min(1, "Endereço é obrigatório"),
+  number: z.string().trim().min(1, "Número é obrigatório"),
+  complement: z.string().optional(),
+  neighborhood: z.string().trim().min(1, "Bairro é obrigatório"),
+  city: z.string().trim().min(1, "Cidade é obrigatória"),
+  state: z.string().trim().min(1, "Estado é obrigatório"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export const AddressForm = () => {
+  const createShippingAddressMutation = useCreateShippingAddress();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      nomeCompleto: "",
-      cpf: "",
-      celular: "",
-      cep: "",
-      endereco: "",
-      numero: "",
-      complemento: "",
-      bairro: "",
-      cidade: "",
-      estado: "",
+      fullName: "",
+      cpfOrCnpj: "",
+      phone: "",
+      zipCode: "",
+      address: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      city: "",
+      state: "",
     },
   });
 
-  async function onSubmit(values: FormValues) {
+  const onSubmit = async (data: FormValues) => {
     try {
-      // Aqui você pode implementar a lógica para salvar o endereço
-      console.log("Dados do formulário:", values);
+      // Mapear os dados do formulário para o formato esperado pela Server Action
+      const addressData = {
+        recipientName: data.fullName,
+        city: data.city,
+        state: data.state,
+        street: data.address,
+        number: data.number,
+        complement: data.complement,
+        zipCode: data.zipCode.replace("-", ""), // Remover formatação do CEP
+        country: "Brasil", // Valor padrão
+        cpfOrCnpj: data.cpfOrCnpj.replace(/\D/g, ""), // Remover formatação do CPF
+        neighborhood: data.neighborhood,
+        email: data.email,
+        phone: data.phone.replace(/\D/g, ""), // Remover formatação do telefone
+      };
+
+      await createShippingAddressMutation.mutateAsync(addressData);
       toast.success("Endereço salvo com sucesso!");
+      form.reset();
     } catch (error) {
-      toast.error("Erro ao salvar endereço");
+      console.error("Erro ao salvar endereço:", error);
+      toast.error("Erro ao salvar endereço. Tente novamente.");
     }
-  }
+  };
 
   return (
-    <Card className="mt-4">
-      <CardHeader>
-        <CardTitle>Novo Endereço</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">Adicionar novo endereço</h3>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-mail</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="seu@email.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome completo</FormLabel>
+                <FormControl>
+                  <Input placeholder="Seu nome completo" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="cpfOrCnpj"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CPF/CNPJ</FormLabel>
+                <FormControl>
+                  <PatternFormat
+                    format="###.###.###-##"
+                    mask="_"
+                    placeholder="000.000.000-00"
+                    customInput={Input}
+                    value={field.value}
+                    onValueChange={(values) => {
+                      field.onChange(values.formattedValue);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Celular</FormLabel>
+                <FormControl>
+                  <PatternFormat
+                    format="(##) #####-####"
+                    mask="_"
+                    placeholder="(00) 00000-0000"
+                    customInput={Input}
+                    value={field.value}
+                    onValueChange={(values) => {
+                      field.onChange(values.formattedValue);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="zipCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CEP</FormLabel>
+                <FormControl>
+                  <PatternFormat
+                    format="#####-###"
+                    mask="_"
+                    placeholder="00000-000"
+                    customInput={Input}
+                    value={field.value}
+                    onValueChange={(values) => {
+                      field.onChange(values.formattedValue);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Endereço</FormLabel>
+                <FormControl>
+                  <Input placeholder="Rua, avenida, etc." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="email"
+              name="number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Número</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Digite seu email"
-                      {...field}
-                    />
+                    <Input placeholder="123" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -99,12 +224,42 @@ export const AddressForm = () => {
 
             <FormField
               control={form.control}
-              name="nomeCompleto"
+              name="complement"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
+                  <FormLabel>Complemento (opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu nome completo" {...field} />
+                    <Input placeholder="Apto, casa, etc." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="neighborhood"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bairro</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome do bairro" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nome da cidade" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,167 +268,40 @@ export const AddressForm = () => {
 
             <FormField
               control={form.control}
-              name="cpf"
+              name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CPF</FormLabel>
+                  <FormLabel>Estado</FormLabel>
                   <FormControl>
-                    <PatternFormat
-                      format="###.###.###-##"
-                      mask="_"
-                      customInput={Input}
-                      placeholder="000.000.000-00"
-                      value={field.value}
-                      onValueChange={(values) => {
-                        field.onChange(values.formattedValue);
-                      }}
-                    />
+                    <Input placeholder="SP, RJ, MG..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="celular"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Celular</FormLabel>
-                  <FormControl>
-                    <PatternFormat
-                      format="(##) #####-####"
-                      mask="_"
-                      customInput={Input}
-                      placeholder="(00) 00000-0000"
-                      value={field.value}
-                      onValueChange={(values) => {
-                        field.onChange(values.formattedValue);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cep"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CEP</FormLabel>
-                  <FormControl>
-                    <PatternFormat
-                      format="#####-###"
-                      mask="_"
-                      customInput={Input}
-                      placeholder="00000-000"
-                      value={field.value}
-                      onValueChange={(values) => {
-                        field.onChange(values.formattedValue);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="endereco"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Endereço</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite seu endereço" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="numero"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Número" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="complemento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Complemento (opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Complemento" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="bairro"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bairro</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite o bairro" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="cidade"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite a cidade" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="estado"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite o estado" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <Button type="submit" className="w-full">
-              Salvar Endereço
+          <div className="flex gap-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              className="flex-1"
+            >
+              Cancelar
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={createShippingAddressMutation.isPending}
+            >
+              {createShippingAddressMutation.isPending
+                ? "Salvando..."
+                : "Salvar endereço"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
