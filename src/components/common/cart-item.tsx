@@ -5,8 +5,10 @@ import { toast } from "sonner";
 
 import { addProductToCart } from "@/actions/add-cart-product";
 import { decreaseProductQuantityInCart } from "@/actions/decrease-cart-product-quantity";
-import { removeProductFromCart } from "@/actions/remove-cart-product";
 import { formatCentsToBRL } from "@/helpers/money";
+import { useDecreaseCartProductQuantity } from "@/hooks/mutations/use-decrease-cart-product";
+import { useIncreaseCartProductQuantity } from "@/hooks/mutations/use-increase-cart-product";
+import { useRemoveProductFromCart } from "@/hooks/mutations/use-remove-product-from-cart";
 
 import { Button } from "../ui/button";
 
@@ -29,33 +31,10 @@ export const CartItem = ({
   productVariantPriceInCents,
   quantity,
 }: CartItemProps) => {
-  const queryClient = useQueryClient();
+  const removeProductFromCartMutation = useRemoveProductFromCart(id);
 
-  const removeProductFromCartMutation = useMutation({
-    mutationKey: ["remove-cart-product"],
-    mutationFn: () =>
-      removeProductFromCart({
-        cartItemId: id,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["cart"],
-      });
-    },
-  });
-
-  const decreaseProductQuantityInCartMutation = useMutation({
-    mutationKey: ["decrease-cart-product-quantity"],
-    mutationFn: () =>
-      decreaseProductQuantityInCart({
-        cartItemId: id,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["cart"],
-      });
-    },
-  });
+  const decreaseProductQuantityInCartMutation =
+    useDecreaseCartProductQuantity(id);
 
   const handleDeleteClick = () => {
     removeProductFromCartMutation.mutate(undefined, {
@@ -79,19 +58,8 @@ export const CartItem = ({
     });
   };
 
-  const increaseProductQuantityInCartMutation = useMutation({
-    mutationKey: ["increase-cart-product-quantity"],
-    mutationFn: () =>
-      addProductToCart({
-        productVariantId,
-        quantity: 1,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["cart"],
-      });
-    },
-  });
+  const increaseProductQuantityInCartMutation =
+    useIncreaseCartProductQuantity(productVariantId);
 
   const handleIncreaseQuantityClick = () => {
     increaseProductQuantityInCartMutation.mutate(undefined, {
