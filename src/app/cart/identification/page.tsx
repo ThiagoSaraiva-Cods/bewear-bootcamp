@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { Header } from "@/components/common/header";
 import { db } from "@/db";
-import { cartTable } from "@/db/schema";
+import { cartTable, shippingAddressTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import { Addresses } from "./components/adresses";
@@ -12,12 +12,12 @@ import { Addresses } from "./components/adresses";
 const IdentificationPage = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!session?.user.id) {
+  if (!session?.user?.id) {
     redirect("/");
   }
 
   const cart = await db.query.cartTable.findFirst({
-    where: eq(cartTable.userId, session?.user.id),
+    where: eq(cartTable.userId, session.user.id),
     with: {
       items: true,
     },
@@ -27,10 +27,14 @@ const IdentificationPage = async () => {
     redirect("/");
   }
 
+  const shippingAddresses = await db.query.shippingAddressTable.findMany({
+    where: eq(shippingAddressTable.userId, session.user.id),
+  });
+
   return (
     <>
       <Header />
-      <Addresses />
+      <Addresses shippingAddresses={shippingAddresses} />
     </>
   );
 };
