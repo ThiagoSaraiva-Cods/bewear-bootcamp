@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getShippingAddresses } from "@/actions/get-shipping-addresses";
+import { getUserAddresses } from "@/actions/get-user-addresses";
 
-export const getUseShippingAddressesQueryKey = () => ["shipping-addresses"];
+export const getUseUserAddressesQueryKey = () => ["user-addresses"];
 
-export const useShippingAddresses = () => {
+export const useUserAddresses = () => {
   return useQuery({
-    queryKey: getUseShippingAddressesQueryKey(),
-    queryFn: getShippingAddresses,
+    queryKey: getUseUserAddressesQueryKey(),
+    queryFn: getUserAddresses,
   });
 };

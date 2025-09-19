@@ -3,10 +3,9 @@
 import { headers } from "next/headers";
 
 import { db } from "@/db";
-import { shippingAddressTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-export const getShippingAddresses = async () => {
+export const getUserAddresses = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -16,8 +15,11 @@ export const getShippingAddresses = async () => {
   }
 
   const addresses = await db.query.shippingAddressTable.findMany({
-    where: (shippingAddressTable, { eq }) => eq(shippingAddressTable.userId, session.user.id),
-    orderBy: (shippingAddressTable, { desc }) => [desc(shippingAddressTable.createdAt)],
+    where: (shippingAddressTable, { eq }) =>
+      eq(shippingAddressTable.userId, session.user.id),
+    orderBy: (shippingAddressTable, { desc }) => [
+      desc(shippingAddressTable.createdAt),
+    ],
   });
 
   return addresses;

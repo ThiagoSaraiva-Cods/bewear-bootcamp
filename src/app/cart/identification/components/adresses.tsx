@@ -4,13 +4,13 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useShippingAddresses } from "@/hooks/queries/use-user-addresses";
+import { useUserAddresses } from "@/hooks/queries/use-user-addresses";
 
 import { AddressForm } from "./address-form";
 
 export const Addresses = () => {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
-  const { data: addresses, isLoading } = useShippingAddresses();
+  const { data: addresses, isLoading } = useUserAddresses();
 
   return (
     <div className="px-5">
@@ -35,19 +35,13 @@ export const Addresses = () => {
                         htmlFor={address.id}
                         className="flex-1 cursor-pointer"
                       >
-                        <div className="font-medium">
-                          {address.recipientName}
-                        </div>
-                        <div className="text-muted-foreground text-sm">
-                          {address.street}, {address.number}
-                          {address.complement && `, ${address.complement}`}
-                        </div>
-                        <div className="text-muted-foreground text-sm">
-                          {address.neighborhood}, {address.city} -{" "}
-                          {address.state}
-                        </div>
-                        <div className="text-muted-foreground text-sm">
-                          CEP: {address.zipCode}
+                        <div className="text-sm">
+                          {address.recipientName} - {address.street},{" "}
+                          {address.number}
+                          {address.complement &&
+                            `, ${address.complement}`}, {address.neighborhood},{" "}
+                          {address.city} - {address.state}, CEP:{" "}
+                          {address.zipCode}
                         </div>
                       </Label>
                     </div>
