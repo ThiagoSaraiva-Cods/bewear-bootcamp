@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
@@ -14,7 +15,6 @@ import {
 export const createShippingAddress = async (
   data: CreateShippingAddressSchema,
 ) => {
-  // Validar os dados de entrada
   createShippingAddressSchema.parse(data);
 
   const session = await auth.api.getSession({ headers: await headers() });
@@ -23,12 +23,11 @@ export const createShippingAddress = async (
     throw new Error("Unauthorized");
   }
 
-  // Inserir o endereço no banco de dados
-  const [newAddress] = await db
+  const [shippingAddress] = await db
     .insert(shippingAddressTable)
     .values({
       userId: session.user.id,
-      recipientName: data.recipientName,
+      recipientName: data.fullName,
       city: data.city,
       state: data.state,
       street: data.street,
@@ -43,5 +42,7 @@ export const createShippingAddress = async (
     })
     .returning();
 
-  return newAddress;
+  revalidatePath("/cart/identification");
+
+  return shippingAddress;
 };

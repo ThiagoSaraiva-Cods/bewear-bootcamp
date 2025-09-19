@@ -21,7 +21,7 @@ import { useCreateShippingAddress } from "@/hooks/mutations/use-create-shipping-
 const formSchema = z.object({
   email: z.email("E-mail inválido"),
   fullName: z.string().trim().min(1, "Nome completo é obrigatório"),
-  cpfOrCnpj: z
+  cpf: z
     .string()
     .min(14, "CPF é obrigatório")
     .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF inválido"),
@@ -29,7 +29,7 @@ const formSchema = z.object({
     .string()
     .min(15, "Celular é obrigatório")
     .regex(/^\(\d{2}\) \d{5}-\d{4}$/, "Celular inválido"),
-  zipCode: z
+  cep: z
     .string()
     .min(9, "CEP é obrigatório")
     .regex(/^\d{5}-\d{3}$/, "CEP inválido"),
@@ -51,9 +51,9 @@ export const AddressForm = () => {
     defaultValues: {
       email: "",
       fullName: "",
-      cpfOrCnpj: "",
+      cpf: "",
       phone: "",
-      zipCode: "",
+      cep: "",
       address: "",
       number: "",
       complement: "",
@@ -67,23 +67,23 @@ export const AddressForm = () => {
     try {
       // Mapear os dados do formulário para o formato esperado pela Server Action
       const addressData = {
-        recipientName: data.fullName,
+        fullName: data.fullName,
         city: data.city,
         state: data.state,
         street: data.address,
         number: data.number,
         complement: data.complement,
-        zipCode: data.zipCode.replace("-", ""), // Remover formatação do CEP
+        zipCode: data.cep.replace("-", ""), // Remover formatação do CEP
         country: "Brasil", // Valor padrão
-        cpfOrCnpj: data.cpfOrCnpj.replace(/\D/g, ""), // Remover formatação do CPF
+        cpfOrCnpj: data.cpf.replace(/\D/g, ""), // Remover formatação do CPF
         neighborhood: data.neighborhood,
         email: data.email,
         phone: data.phone.replace(/\D/g, ""), // Remover formatação do telefone
       };
 
+      form.reset();
       await createShippingAddressMutation.mutateAsync(addressData);
       toast.success("Endereço salvo com sucesso!");
-      form.reset();
     } catch (error) {
       console.error("Erro ao salvar endereço:", error);
       toast.error("Erro ao salvar endereço. Tente novamente.");
@@ -126,10 +126,10 @@ export const AddressForm = () => {
 
           <FormField
             control={form.control}
-            name="cpfOrCnpj"
+            name="cpf"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>CPF/CNPJ</FormLabel>
+                <FormLabel>CPF</FormLabel>
                 <FormControl>
                   <PatternFormat
                     format="###.###.###-##"
@@ -172,7 +172,7 @@ export const AddressForm = () => {
 
           <FormField
             control={form.control}
-            name="zipCode"
+            name="cep"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>CEP</FormLabel>
@@ -293,11 +293,9 @@ export const AddressForm = () => {
             <Button
               type="submit"
               className="flex-1"
-              disabled={createShippingAddressMutation.isPending}
+              disabled={form.formState.isSubmitting}
             >
-              {createShippingAddressMutation.isPending
-                ? "Salvando..."
-                : "Salvar endereço"}
+              {form.formState.isSubmitting ? "Salvando..." : "Salvar endereço"}
             </Button>
           </div>
         </form>

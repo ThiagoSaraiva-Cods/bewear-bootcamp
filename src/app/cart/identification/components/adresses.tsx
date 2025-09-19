@@ -4,11 +4,13 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useShippingAddresses } from "@/hooks/queries/use-user-addresses";
 
 import { AddressForm } from "./address-form";
 
 export const Addresses = () => {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const { data: addresses, isLoading } = useShippingAddresses();
 
   return (
     <div className="px-5">
@@ -21,6 +23,39 @@ export const Addresses = () => {
             value={selectedAddress}
             onValueChange={setSelectedAddress}
           >
+            {isLoading ? (
+              <div className="py-4 text-center">Carregando endereços...</div>
+            ) : (
+              addresses?.map((address) => (
+                <Card key={address.id}>
+                  <CardContent>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value={address.id} id={address.id} />
+                      <Label
+                        htmlFor={address.id}
+                        className="flex-1 cursor-pointer"
+                      >
+                        <div className="font-medium">
+                          {address.recipientName}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          {address.street}, {address.number}
+                          {address.complement && `, ${address.complement}`}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          {address.neighborhood}, {address.city} -{" "}
+                          {address.state}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          CEP: {address.zipCode}
+                        </div>
+                      </Label>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+
             <Card>
               <CardContent>
                 <div className="flex items-center space-x-2">
