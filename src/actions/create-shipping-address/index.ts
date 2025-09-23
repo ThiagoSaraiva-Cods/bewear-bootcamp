@@ -34,7 +34,6 @@ export const createShippingAddress = async (
       number: data.number,
       complement: data.complement || null,
       zipCode: data.zipCode,
-      country: data.country,
       cpfOrCnpj: data.cpfOrCnpj,
       neighborhood: data.neighborhood,
       email: data.email,

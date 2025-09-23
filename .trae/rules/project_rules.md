@@ -42,3 +42,4 @@ Você é um engenheiro de software sênior especializado em desenvolvimento web 
 - NUNCA use o tipo String("z.string().email()") do zod quando for para validar um campo de e-mail, SEMPRE use o tipo z.email() para inputs do tipo e-mail.
 - NUNCA adicione importações que não serão usadas no arquivo.
 - SEMPRE importe somente as bibliotecas que forem necessárias para o arquivo.
+- SEMPRE crie funções de página usando arrow functions.

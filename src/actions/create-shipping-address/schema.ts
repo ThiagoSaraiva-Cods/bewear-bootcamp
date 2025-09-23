@@ -8,7 +8,6 @@ export const createShippingAddressSchema = z.object({
   number: z.string().min(1, "Número é obrigatório"),
   complement: z.string().optional(),
   zipCode: z.string().min(8, "CEP deve ter 8 dígitos").max(9, "CEP inválido"),
-  country: z.string().min(1, "País é obrigatório"),
   cpfOrCnpj: z
     .string()
     .min(11, "CPF deve ter 11 dígitos")

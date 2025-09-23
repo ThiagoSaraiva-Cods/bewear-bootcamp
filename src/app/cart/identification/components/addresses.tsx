@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { PatternFormat } from "react-number-format";
@@ -24,6 +25,8 @@ import { shippingAddressTable } from "@/db/schema";
 import { useCreateShippingAddress } from "@/hooks/mutations/use-create-shipping-address";
 import { useUpdateCartShippingAddress } from "@/hooks/mutations/use-update-cart-shipping-address";
 import { useUserAddresses } from "@/hooks/queries/use-user-addresses";
+
+import { formatAddress } from "../../helpers/address";
 
 const formSchema = z.object({
   email: z.email("E-mail inválido"),
@@ -59,6 +62,8 @@ export const Addresses = ({
   shippingAddresses,
   defaultShippingAddressId,
 }: AddressesProps) => {
+  const router = useRouter();
+
   const [selectedAddress, setSelectedAddress] = useState<string | null>(
     defaultShippingAddressId || null,
   );
@@ -101,7 +106,6 @@ export const Addresses = ({
         number: data.number,
         complement: data.complement,
         zipCode: data.cep.replace("-", ""),
-        country: "Brasil",
         cpfOrCnpj: data.cpf.replace(/\D/g, ""),
         neighborhood: data.neighborhood,
         email: data.email,
@@ -118,16 +122,13 @@ export const Addresses = ({
   };
 
   const handleGoToPayment = async () => {
-    if (!selectedAddress || selectedAddress === "add_new") {
-      toast.error("Selecione um endereço para continuar");
-      return;
-    }
+    if (!selectedAddress || selectedAddress === "add_new") return;
 
     try {
       await updateCartShippingAddressMutation.mutateAsync({
         shippingAddressId: selectedAddress,
       });
-      toast.success("Endereço selecionado para entrega!");
+      router.push("/cart/confirmation");
     } catch (error) {
       console.error("Erro ao vincular endereço:", error);
       toast.error("Erro ao vincular endereço. Tente novamente.");
@@ -157,14 +158,9 @@ export const Addresses = ({
                         htmlFor={address.id}
                         className="flex-1 cursor-pointer"
                       >
-                        <div className="text-sm">
-                          {address.recipientName} - {address.street},{" "}
-                          {address.number}
-                          {address.complement &&
-                            `, ${address.complement}`}, {address.neighborhood},{" "}
-                          {address.city} - {address.state}, CEP:{" "}
-                          {address.zipCode}
-                        </div>
+                        <p className="text-sm font-medium">
+                          {formatAddress(address)}
+                        </p>
                       </Label>
                     </div>
                   </CardContent>
