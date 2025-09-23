@@ -89,7 +89,6 @@ export const Addresses = ({
 
   const handleAddressCreated = () => {
     setSelectedAddress(defaultShippingAddressId || null);
-    toast.success("Endereço salvo com sucesso!");
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -128,7 +127,7 @@ export const Addresses = ({
       await updateCartShippingAddressMutation.mutateAsync({
         shippingAddressId: selectedAddress,
       });
-      toast.success("Endereço vinculado ao carrinho com sucesso!");
+      toast.success("Endereço selecionado para entrega!");
     } catch (error) {
       console.error("Erro ao vincular endereço:", error);
       toast.error("Erro ao vincular endereço. Tente novamente.");
@@ -136,7 +135,7 @@ export const Addresses = ({
   };
 
   return (
-    <div className="px-5">
+    <>
       <Card>
         <CardHeader>
           <CardTitle>Identificação</CardTitle>
@@ -420,6 +419,6 @@ export const Addresses = ({
           )}
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 };
