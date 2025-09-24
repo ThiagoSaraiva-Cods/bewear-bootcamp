@@ -38,9 +38,7 @@ export const CartItem = ({
 
   const handleDeleteClick = () => {
     removeProductFromCartMutation.mutate(undefined, {
-      onSuccess: () => {
-        toast.success("Produto removido do carrinho.");
-      },
+      onSuccess: () => {},
       onError: () => {
         toast.error("Erro ao remover produto do carrinho.");
       },
@@ -49,9 +47,7 @@ export const CartItem = ({
 
   const handleDecreaseQuantityClick = () => {
     decreaseProductQuantityInCartMutation.mutate(undefined, {
-      onSuccess: () => {
-        toast.success("Quantidade do produto diminuida.");
-      },
+      onSuccess: () => {},
       onError: () => {
         toast.error("Erro ao diminuir quantidade do produto.");
       },
@@ -63,9 +59,7 @@ export const CartItem = ({
 
   const handleIncreaseQuantityClick = () => {
     increaseProductQuantityInCartMutation.mutate(undefined, {
-      onSuccess: () => {
-        toast.success("Quantidade do produto aumentada.");
-      },
+      onSuccess: () => {},
       onError: () => {
         toast.error("Erro ao aumentar quantidade do produto.");
       },

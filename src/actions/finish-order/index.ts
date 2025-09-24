@@ -1,6 +1,7 @@
 "use server";
 
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
@@ -41,15 +42,30 @@ export const finishOrder = async () => {
     throw new Error("Shipping address not found");
   }
 
-  const totalPriceInCents = cart.items.reduce((acc, item) => {
-    return acc + item.productVariant.priceInCents * item.quantity;
-  }, 0);
+  const totalPriceInCents = cart.items.reduce(
+    (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
+    0,
+  );
 
   await db.transaction(async (tx) => {
+    if (!cart.shippingAddress) {
+      throw new Error("Shipping address not found");
+    }
+
     const [order] = await tx
       .insert(orderTable)
       .values({
-        ...cart.shippingAddress!,
+        email: cart.shippingAddress.email,
+        city: cart.shippingAddress.city,
+        state: cart.shippingAddress.state,
+        recipientName: cart.shippingAddress.recipientName,
+        street: cart.shippingAddress.street,
+        number: cart.shippingAddress.number,
+        complement: cart.shippingAddress.complement,
+        zipCode: cart.shippingAddress.zipCode,
+        cpfOrCnpj: cart.shippingAddress.cpfOrCnpj,
+        neighborhood: cart.shippingAddress.neighborhood,
+        phone: cart.shippingAddress.phone,
         userId: session.user.id,
         shippingAddressId: cart.shippingAddress!.id,
         totalPriceInCents,
@@ -57,7 +73,7 @@ export const finishOrder = async () => {
       .returning();
 
     if (!order) {
-      throw new Error("Order not created");
+      throw new Error("Failed to create order");
     }
 
     const orderItemsPayload: Array<typeof orderItemTable.$inferInsert> =
@@ -69,6 +85,7 @@ export const finishOrder = async () => {
       }));
 
     await tx.insert(orderItemTable).values(orderItemsPayload);
-    await tx.delete(cartItemTable).where(eq(cartItemTable.id, cart.id));
+    await tx.delete(cartTable).where(eq(cartTable.id, cart.id));
+    await tx.delete(cartItemTable).where(eq(cartItemTable.cartId, cart.id));
   });
 };
