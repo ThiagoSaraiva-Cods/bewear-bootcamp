@@ -1,10 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
-import { addProductToCart } from "@/actions/add-cart-product";
-import { decreaseProductQuantityInCart } from "@/actions/decrease-cart-product-quantity";
 import { formatCentsToBRL } from "@/helpers/money";
 import { useDecreaseCartProductQuantity } from "@/hooks/mutations/use-decrease-cart-product";
 import { useIncreaseCartProductQuantity } from "@/hooks/mutations/use-increase-cart-product";
